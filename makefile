@@ -1,25 +1,37 @@
-exe: HTTP_server.exe
+exe: HTTP_server.exe HTTP_client.exe
 
-debug: debug.exe
+debug_server: debug_server.exe debug_client.exe
 
 
 
-HTTP_server.exe: obj/main.o obj/functions.o log obj dobj
-	gcc -Wall obj/main.o obj/functions.o -o HTTP_server.exe -l ws2_32
+HTTP_server.exe: obj/server.o obj/functions.o log obj dobj
+	gcc -Wall obj/server.o obj/functions.o -o HTTP_server.exe -l ws2_32
 
-obj/main.o: src/main.c obj
-	gcc -Wall -c src/main.c -o obj/main.o -l ws2_32
+HTTP_client.exe: obj/client.o obj/functions.o log obj dobj
+	gcc -Wall obj/client.o obj/functions.o -o HTTP_client.exe -l ws2_32
+
+obj/server.o: src/server.c obj
+	gcc -Wall -c src/server.c -o obj/server.o -l ws2_32
+
+obj/client.o: src/client.c obj
+	gcc -Wall -c src/client.c -o obj/client.o -l ws2_32
 
 obj/functions.o: src/functions.c obj
 	gcc -Wall -c src/functions.c -o obj/functions.o -l ws2_32
 
 
 
-debug.exe: dobj/main.o dobj/functions.o log obj dobj
-	gcc -g -Wall dobj/main.o dobj/functions.o -o debug.exe
+debug_server.exe: dobj/server.o dobj/functions.o log obj dobj
+	gcc -g -Wall dobj/server.o dobj/functions.o -o debug_server.exe
 
-dobj/main.o: src/main.c dobj
-	gcc -g -Wall src/main.c -o dobj/main.o
+debug_client.exe: dobj/client.o dobj/functions.o log obj dobj
+	gcc -g -Wall dobj/client.o dobj/functions.o -o debug_client.exe
+
+dobj/server.o: src/server.c dobj
+	gcc -g -Wall src/server.c -o dobj/server.o
+
+dobj/client.o: src/client.c dobj
+	gcc -g -Wall src/client.c -o dobj/client.o
 
 dobj/functions.o: src/functions.c dobj
 	gcc -g -Wall src/functions.c -o dobj/functions.o
