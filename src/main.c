@@ -37,7 +37,7 @@ int main(int argc, char *argv[]){
     }
 
     // char buffer[300];
-    send(clientSocket, "Hello World!", 15, 0);
+    send(clientSocket, "Hello World!\r\n", 20, 0);
     // write(clientSocket, "Hello World!", 13);
     // int len = read(clientSocket, buffer, 300);
     // printf("len: %i\n", len);
