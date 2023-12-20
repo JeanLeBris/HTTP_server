@@ -22,13 +22,16 @@ int main(int argc, char *argv[]){
         exit(EXIT_FAILURE);
     }
 
-    if(listen(fdsocket, BACKLOG) != 0){
-        printf("listening failure: %s\n", strerror(WSAGetLastError()));
-        exit(EXIT_FAILURE);
-    }
+    // if(listen(fdsocket, BACKLOG) != 0){
+    //     printf("listening failure: %s\n", strerror(WSAGetLastError()));
+    //     exit(EXIT_FAILURE);
+    // }
 
     int serverSocket;
     SOCKADDR_IN serverAdress;
+    serverAdress.sin_addr.s_addr = inet_addr("192.168.1.98");
+    serverAdress.sin_family = AF_INET;
+    serverAdress.sin_port = htons(4148);
     int addrlen = sizeof(serverAdress);
     if((serverSocket = connect(fdsocket, (SOCKADDR *) &serverAdress, addrlen)) != -1){
         char ip[16];
