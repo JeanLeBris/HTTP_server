@@ -5,7 +5,7 @@
 #include <WS2tcpip.h>
 #include "../lib/functions.h"
 
-#define BACKLOG 3
+// #define BACKLOG 3
 
 int main(int argc, char *argv[]){
     WSADATA WSAData;
@@ -43,9 +43,11 @@ int main(int argc, char *argv[]){
     // send(serverSocket, buffer, 300, 0);
     // int len = read(serverSocket, buffer, 300);
     strcpy(buffer, "Hello World!\r\n");
-    write(serverSocket, buffer, strlen(buffer));
-    int len = read(fdsocket, buffer, 300);
+    // write(serverSocket, buffer, strlen(buffer));
+    send(fdsocket, buffer, 300, 0);
+    int len = recv(fdsocket, buffer, 300, 0);
     printf("len: %i\tbuffer: %s\n", len, buffer);
+    closesocket(fdsocket);
 
     WSACleanup();
 
