@@ -41,7 +41,7 @@ int main(int argc, char *argv[]){
     send(clientSocket, buffer, 300, 0);
     // write(clientSocket, "Hello World!", 13);
     // int len = read(clientSocket, buffer, 300);
-    // printf("len: %i\n", len);
+    printf("len: %i\tbuffer: %s\n", len, buffer);
 
     WSACleanup();
 
