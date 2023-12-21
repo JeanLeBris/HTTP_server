@@ -11,7 +11,7 @@ int main(int argc, char *argv[]){
 
     SOCKET fdsocket = CreateSocket();
 
-    SOCKADDR_IN sin = CreateSin();
+    SOCKADDR_IN sin = CreateClientSin();
 
     BindingSocket(&fdsocket, &sin);
 
