@@ -27,18 +27,26 @@ SOCKET CreateSocket(){
     SOCKET fdsocket;
     if((fdsocket = socket(SOCKET_DOMAIN, SOCKET_TYPE, SOCKET_PROTOCOL)) == -1){
         printf("socket creation failure: %s\n", strerror(WSAGetLastError()));
-        //exit(EXIT_FAILURE);
+        exit(EXIT_FAILURE);
     }
     printf("socket: %lld\n", fdsocket);
     return fdsocket;
 }
 
-SOCKADDR_IN CreateSin(){
+SOCKADDR_IN CreateClientSin(){
     SOCKADDR_IN sin;
     sin.sin_addr.s_addr = INADDR_ANY;   // inet_addr(SIN_ADDR);
     sin.sin_family = SIN_FAMILY;
     sin.sin_port = htons(SIN_PORT);
     return sin;
+}
+
+SOCKADDR_IN CreateServerSin(){
+    SOCKADDR_IN serverAdress;
+    serverAdress.sin_addr.s_addr = inet_addr("192.168.1.98");
+    serverAdress.sin_family = AF_INET;
+    serverAdress.sin_port = htons(4148);
+    return serverAdress;
 }
 
 void BindingSocket(SOCKET *fdsocket, SOCKADDR_IN *sin){
@@ -64,4 +72,15 @@ int AcceptClientSocket(SOCKET *fdsocket, SOCKADDR_IN *clientAdress){
         printf("connexion: %s:%i\n", ip, clientAdress->sin_port);
     }
     return clientSocket;
+}
+
+int ConnectServerSocket(SOCKET *fdsocket, SOCKADDR_IN *serverAdress){
+    int serverSocket;
+    int addrlen = sizeof(*serverAdress);
+    if((serverSocket = connect(*fdsocket, (SOCKADDR *) serverAdress, addrlen)) != -1){
+        char ip[16];
+        inet_ntop(AF_INET, &(serverAdress->sin_addr), ip, 16);
+        printf("connexion: %s:%i\n", ip, serverAdress->sin_port);
+    }
+    return serverSocket;
 }
