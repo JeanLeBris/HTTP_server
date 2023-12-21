@@ -40,11 +40,12 @@ int main(int argc, char *argv[]){
     }
 
     char buffer[300];
-    int len = read(serverSocket, buffer, 300);
-    send(serverSocket, buffer, 300, 0);
-    // write(clientSocket, "Hello World!", 13);
-    // int len = read(clientSocket, buffer, 300);
-    // printf("len: %i\n", len);
+    // send(serverSocket, buffer, 300, 0);
+    // int len = read(serverSocket, buffer, 300);
+    strcpy(buffer, "Hello World!\r\n");
+    write(serverSocket, buffer, strlen(buffer));
+    int len = read(fdsocket, buffer, 300);
+    printf("len: %i\tbuffer: %s\n", len, buffer);
 
     WSACleanup();
 
