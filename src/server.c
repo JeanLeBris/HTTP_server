@@ -5,44 +5,52 @@
 #include <WS2tcpip.h>
 #include "../lib/functions.h"
 
-#define BACKLOG 3
-
 int main(int argc, char *argv[]){
     WSADATA WSAData;
     WSAStartup(MAKEWORD(2, 0), &WSAData);
 
     SOCKET fdsocket = CreateSocket();
-    printf("socket: %lld\n", fdsocket);
 
     SOCKADDR_IN sin = CreateSin();
-    // printf("sin: %d\n", sin);
 
-    if(bind(fdsocket, (SOCKADDR *) &sin, sizeof(sin)) != 0){
-        printf("binding failure: %s\n", strerror(WSAGetLastError()));
-        exit(EXIT_FAILURE);
-    }
+    BindingSocket(&fdsocket, &sin);
 
-    if(listen(fdsocket, BACKLOG) != 0){
-        printf("listening failure: %s\n", strerror(WSAGetLastError()));
-        exit(EXIT_FAILURE);
-    }
+    ListenSocket(&fdsocket);
 
-    int clientSocket;
     SOCKADDR_IN clientAdress;
-    int addrlen = sizeof(clientAdress);
-    if((clientSocket = accept(fdsocket, (SOCKADDR *) &clientAdress, &addrlen)) != -1){
-        char ip[16];
-        inet_ntop(AF_INET, &(clientAdress.sin_addr), ip, 16);
-        printf("connexion: %s:%i\n", ip, clientAdress.sin_port);
-    }
+    int clientSocket = AcceptClientSocket(&fdsocket, &clientAdress);
 
-    char buffer[1000];
+    char message[2000] = "\0";
+    char buffer[2000];
+    char buffer2[2000];
     // int len = _read(clientSocket, buffer, 300);
     // strcpy(buffer, "Hello World!\r\n");
-    int len = recv(clientSocket, buffer, 1000, 0);
+    int len = recv(clientSocket, buffer, 2000, 0);
     printf("len: %i\tbuffer: %s\n", len, buffer);
     // Sleep(100);
-    send(clientSocket, buffer, strlen(buffer), 0);
+
+    strcpy(buffer, "\0");
+    FILE *fic = fopen("../page.html", "r");
+    if(fic == NULL){
+		return 1;
+	}
+	fseek(fic, 0, SEEK_SET);
+    while(!feof(fic)){
+		fgets(buffer2, 500, fic);
+        strcat(buffer, buffer2);
+	}
+	fclose(fic);
+    strcat(message, "HTTP/1.1 200 OK\n");
+    strcat(message, "Date: Thu, 21 Dec 2023 21:05:05 GMT\n");
+    strcat(message, "Server: deeznuts\n");
+    strcat(message, "Last-Modified: Thu, 20 Dec 2023 21:05:05 GMT\n");
+    strcat(message, "ETag: azerty\n");
+    strcat(message, "Accept-Ranges: bytes\n");
+    strcat(message, "Content-Length: 230\n");
+    strcat(message, "Content-Type: text/html\n\n");
+    strcat(message, buffer);
+
+    send(clientSocket, message, strlen(message), 0);
     // write(clientSocket, "Hello World!", 13);
     // int len = read(clientSocket, buffer, 300);
     closesocket(clientSocket);
