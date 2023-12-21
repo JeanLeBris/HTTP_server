@@ -36,12 +36,16 @@ int main(int argc, char *argv[]){
         printf("connexion: %s:%i\n", ip, clientAdress.sin_port);
     }
 
-    char buffer[300];
-    int len = read(clientSocket, buffer, 300);
-    send(clientSocket, buffer, 300, 0);
+    char buffer[1000];
+    // int len = _read(clientSocket, buffer, 300);
+    // strcpy(buffer, "Hello World!\r\n");
+    int len = recv(clientSocket, buffer, 1000, 0);
+    printf("len: %i\tbuffer: %s\n", len, buffer);
+    // Sleep(100);
+    send(clientSocket, buffer, strlen(buffer), 0);
     // write(clientSocket, "Hello World!", 13);
     // int len = read(clientSocket, buffer, 300);
-    printf("len: %i\tbuffer: %s\n", len, buffer);
+    closesocket(clientSocket);
 
     WSACleanup();
 
