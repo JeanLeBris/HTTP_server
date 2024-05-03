@@ -29,7 +29,7 @@ SOCKET CreateSocket(){
         printf("socket creation failure: %s\n", strerror(WSAGetLastError()));
         exit(EXIT_FAILURE);
     }
-    printf("socket: %lld\n", fdsocket);
+    // printf("socket: %lld\n", fdsocket);
     return fdsocket;
 }
 
@@ -83,4 +83,13 @@ int ConnectServerSocket(SOCKET *fdsocket, SOCKADDR_IN *serverAdress){
         printf("connexion: %s:%i\n", ip, serverAdress->sin_port);
     }
     return serverSocket;
+}
+
+http_message_t GetData(char buffer[10000]){
+    char trash[10000];
+    http_message_t message;
+    sscanf(buffer, "%s %s %s\n", message.request, message.document, message.version);
+    sscanf(buffer, "%sHost: %s:%s\n%s", trash, message.hostIP, message.hostPort, trash);
+    printf("1: %s\n2: %s\n3: %s\n4: %s:%s\n", message.request, message.document, message.version, message.hostIP, message.hostPort);
+    return message;
 }
