@@ -4,59 +4,73 @@
 #include <winsock2.h>
 #include <WS2tcpip.h>
 #include "../lib/functions.h"
+#include "../lib/config.h"
 
 int main(int argc, char *argv[]){
+    config_type config = malloc(sizeof(*config));
+    Set_Default_Config(config, argv[0]);
+    Load_Config(config);
     WSADATA WSAData;
     WSAStartup(MAKEWORD(2, 0), &WSAData);
 
+    // create a socket linked to a specific transport service provider
     SOCKET fdsocket = CreateSocket();
 
-    SOCKADDR_IN sin = CreateClientSin();
+    // Specify a transport address and a port for the server
+    SOCKADDR_IN sin = CreateClientSinForServ();
 
+    // Associates a local address with a socket
     BindingSocket(&fdsocket, &sin);
 
+    // change socket state to listening
     ListenSocket(&fdsocket);
 
+    struct request request_object;
+    struct response response_object;
+    char buffer[20000];
+    // int received_len = -1;
+    // int sent_len = -1;
+
     SOCKADDR_IN clientAdress;
-    int clientSocket = AcceptClientSocket(&fdsocket, &clientAdress);
+    SOCKET clientSocket;
 
-    // char message[2000] = "\0";
-    char buffer[10000];
-    // char buffer2[2000];
-    // int len = _read(clientSocket, buffer, 300);
-    // strcpy(buffer, "Hello World!\r\n");
-    int len = recv(clientSocket, buffer, 2000, 0);
-    printf("len: %i\tbuffer: %s\n", len, buffer);
-    http_message_t message = GetData(buffer);
-    // Sleep(100);
+    while(1){
+        // accept an incoming connexion on a socket
+        clientSocket = AcceptClientSocket(&fdsocket, &clientAdress);
 
-    // strcpy(buffer, "\0");
-    // FILE *fic = fopen("../page.html", "r");
-    // if(fic == NULL){
-	// 	return 1;
-	// }
-	// fseek(fic, 0, SEEK_SET);
-    // while(!feof(fic)){
-	// 	fgets(buffer2, 500, fic);
-    //     strcat(buffer, buffer2);
-	// }
-	// fclose(fic);
-    // strcat(message, "HTTP/1.1 200 OK\n");
-    // strcat(message, "Date: Thu, 21 Dec 2023 21:05:05 GMT\n");
-    // strcat(message, "Server: deeznuts\n");
-    // strcat(message, "Last-Modified: Thu, 20 Dec 2023 21:05:05 GMT\n");
-    // strcat(message, "ETag: azerty\n");
-    // strcat(message, "Accept-Ranges: bytes\n");
-    // strcat(message, "Content-Length: 230\n");
-    // strcat(message, "Content-Type: text/html\n\n");
-    // strcat(message, buffer);
+        // receive data from a socket
+        memset(buffer, 0, 20000);
+        // received_len = recv(clientSocket, buffer, 2000, 0);
+        recv(clientSocket, buffer, 2000, 0);
 
-    send(clientSocket, buffer, strlen(buffer), 0);
-    // write(clientSocket, "Hello World!", 13);
-    // int len = read(clientSocket, buffer, 300);
-    closesocket(clientSocket);
+        ProcessRequestData(&request_object, buffer);
+
+        PrintRequestLog(&request_object, clientAdress);
+        // PrintRequest(&request_object);
+
+        ForgeResponseFromRequest(&response_object, &request_object, config);
+
+        // PrintResponseLog(&response_object, clientAdress);
+        // PrintResponse(&response_object);
+
+        memset(buffer, 0, 20000);
+        ProcessResponseData(&response_object, buffer);
+
+        PrintResponseBuffer(buffer);
+        // PrintResponse(&response_object);
+        // ProcessResponse(message, buffer);
+
+        // send data to a socket
+        // sent_len = send(clientSocket, buffer, strlen(buffer), 0);
+        send(clientSocket, buffer, strlen(buffer), 0);
+
+        // close an existing socket
+        closesocket(clientSocket);
+        // closesocket(fdsocket);
+    }
 
     WSACleanup();
+    free(config);
 
     return EXIT_SUCCESS;
 }
