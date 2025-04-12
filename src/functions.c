@@ -206,8 +206,11 @@ request_t ProcessRequestData(request_t request, char *buffer){
 }
 
 response_t ForgeResponseFromRequest(response_t response, request_t request, config_type config){
-    char line[10000] = "";
-    char document[20000] = "";
+    char line[100000] = "";
+    char character;
+    char document[100000] = "";
+    int document_iterator = 0;
+    response->body_length = 0;
     FILE *fptr = NULL;
     char file_path[1000] = "";
     char file_path_in_case_of_failure[1000] = "";
@@ -239,21 +242,42 @@ response_t ForgeResponseFromRequest(response_t response, request_t request, conf
         strcpy(response->headers_keys[0], "Content-Type");
         strcpy(response->headers_values[0], "text/html; charset=utf-8");
         response->amount_of_headers = 1;
+        fptr = fopen(file_path, "r");
     }
     else if(strcmp(file_extension, "css") == 0){
         strcpy(response->headers_keys[0], "Content-Type");
         strcpy(response->headers_values[0], "text/css; charset=utf-8");
         response->amount_of_headers = 1;
+        fptr = fopen(file_path, "r");
     }
     else if(strcmp(file_extension, "js") == 0){
         strcpy(response->headers_keys[0], "Content-Type");
         strcpy(response->headers_values[0], "text/javascript; charset=utf-8");
         response->amount_of_headers = 1;
+        fptr = fopen(file_path, "r");
+    }
+    else if(strcmp(file_extension, "ico") == 0){
+        strcpy(response->headers_keys[0], "Content-Type");
+        strcpy(response->headers_values[0], "image/x-icon");
+        response->amount_of_headers = 1;
+        fptr = fopen(file_path, "rb");
+    }
+    // else if(strcmp(file_extension, "jpg") == 0){
+    //     strcpy(response->headers_keys[0], "Content-Type");
+    //     strcpy(response->headers_values[0], "image/jpg");
+    //     response->amount_of_headers = 1;
+    //     fptr = fopen(file_path, "rb");
+    // }
+    else if(strcmp(file_extension, "png") == 0){
+        strcpy(response->headers_keys[0], "Content-Type");
+        strcpy(response->headers_values[0], "image/png");
+        response->amount_of_headers = 1;
+        fptr = fopen(file_path, "rb");
     }
     else{
         failure_bool = TRUE;
     }
-    fptr = fopen(file_path, "r");
+    // fptr = fopen(file_path, "r");
     if(fptr == NULL){
         if(file_extension == file_path){
             strcat(strcat(file_path_in_case_of_failure, file_path), ".html");
@@ -275,19 +299,21 @@ response_t ForgeResponseFromRequest(response_t response, request_t request, conf
     else{
         response->status_code = 200;
         strcpy(response->status_description, "OK");
-        while(fgets(line, 100, fptr)) {
-            strcat(document, line);
+        while(feof(fptr) == NULL){
+            character = fgetc(fptr);
+            response->body[response->body_length] = character;
+            response->body_length++;
+            response->body[response->body_length] = '\0';
         }
-        fclose(fptr);
     }
-
-    strcpy(response->body, document);
+    fclose(fptr);
 
     return response;
 }
 
 char *ProcessResponseData(response_t response, char *buffer){
-    char buffer_bis[20000] = "";
+    char buffer_bis[100000] = "";
+    int len = 0;
 
     sprintf(buffer_bis, "%s %d %s\n", response->http_version, response->status_code, response->status_description);
     strcat(buffer, buffer_bis);
@@ -295,8 +321,12 @@ char *ProcessResponseData(response_t response, char *buffer){
         sprintf(buffer_bis, "%s: %s\n", response->headers_keys[i], response->headers_values[i]);
         strcat(buffer, buffer_bis);
     }
-    sprintf(buffer_bis, "\n%s", response->body);
-    strcat(buffer, buffer_bis);
+    strcat(buffer, "\n");
+    len = strlen(buffer);
+    for(int i = len; i < len + response->body_length; i++){
+        buffer[i] = response->body[i - len];
+    }
+    response->total_length = len + response->body_length;
     
     return buffer;
 }
@@ -323,13 +353,17 @@ void PrintResponse(response_t response){
         printf("key : %s\n", response->headers_keys[i]);
         printf("value : %s\n", response->headers_values[i]);
     }
-    printf("body :\n%s\n", response->body);
+    printf("body :\n");
+    for(int i = 0; i < response->body_length; i++){
+        printf("%02x ", (unsigned char)response->body[i]);
+    }
+    printf("\n");
 }
 
 void PrintResponseLog(response_t response, SOCKADDR_IN clientAdress){
     char ip[16];
     inet_ntop(AF_INET, &clientAdress.sin_addr, ip, 16);
-    printf("ANS %s:%i %d %s len %lld\n", ip, clientAdress.sin_port, response->status_code, response->status_description, strlen(response->body));
+    printf("ANS %s:%i %d %s len %d\n", ip, clientAdress.sin_port, response->status_code, response->status_description, response->body_length);
 }
 
 void PrintResponseBuffer(char *buffer){

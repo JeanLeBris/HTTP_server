@@ -27,7 +27,7 @@ int main(int argc, char *argv[]){
 
     struct request request_object;
     struct response response_object;
-    char buffer[20000];
+    char buffer[100000];
     // int received_len = -1;
     // int sent_len = -1;
 
@@ -39,9 +39,9 @@ int main(int argc, char *argv[]){
         clientSocket = AcceptClientSocket(&fdsocket, &clientAdress);
 
         // receive data from a socket
-        memset(buffer, 0, 20000);
+        memset(buffer, 0, 100000);
         // received_len = recv(clientSocket, buffer, 2000, 0);
-        recv(clientSocket, buffer, 2000, 0);
+        recv(clientSocket, buffer, 100000, 0);
 
         ProcessRequestData(&request_object, buffer);
 
@@ -50,19 +50,16 @@ int main(int argc, char *argv[]){
 
         ForgeResponseFromRequest(&response_object, &request_object, config);
 
-        // PrintResponseLog(&response_object, clientAdress);
-        // PrintResponse(&response_object);
-
-        memset(buffer, 0, 20000);
+        memset(buffer, 0, 100000);
         ProcessResponseData(&response_object, buffer);
 
-        PrintResponseBuffer(buffer);
+        PrintResponseLog(&response_object, clientAdress);
         // PrintResponse(&response_object);
-        // ProcessResponse(message, buffer);
+        // PrintResponseBuffer(buffer);
 
         // send data to a socket
         // sent_len = send(clientSocket, buffer, strlen(buffer), 0);
-        send(clientSocket, buffer, strlen(buffer), 0);
+        send(clientSocket, buffer, response_object.total_length, 0);
 
         // close an existing socket
         closesocket(clientSocket);

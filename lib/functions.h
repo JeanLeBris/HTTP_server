@@ -13,7 +13,7 @@ typedef struct request{
     char headers_keys[30][100];
     char headers_values[30][100];
 
-    char body[20000];
+    char body[100000];
 }*request_t;
 
 typedef struct response{
@@ -25,7 +25,9 @@ typedef struct response{
     char headers_keys[30][100];
     char headers_values[30][100];
 
-    char body[20000];
+    char body[100000];
+    int body_length;
+    int total_length;
 }*response_t;
 
 SOCKET CreateSocket();
