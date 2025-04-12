@@ -207,6 +207,7 @@ request_t ProcessRequestData(request_t request, char *buffer){
 
 response_t ForgeResponseFromRequest(response_t response, request_t request, config_type config){
     char line[100000] = "";
+    char buffer[20] = "";
     char character;
     char document[100000] = "";
     int document_iterator = 0;
@@ -305,6 +306,10 @@ response_t ForgeResponseFromRequest(response_t response, request_t request, conf
             response->body_length++;
             response->body[response->body_length] = '\0';
         }
+        sprintf(buffer, "%d", response->body_length);
+        strcpy(response->headers_keys[1], "Content-Length");
+        strcpy(response->headers_values[1], buffer);
+        response->amount_of_headers++;
     }
     fclose(fptr);
 
